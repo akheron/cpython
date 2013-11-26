@@ -102,6 +102,7 @@ EMPTYSTRING = ''
 COMMASPACE = ', '
 DATA_SIZE_DEFAULT = 33554432
 
+EMPTYBINARY = b''   # fix 0 - binary joiner
 
 def usage(code, msg=''):
     print(__doc__ % globals(), file=sys.stderr)
@@ -286,11 +287,11 @@ class SMTPChannel(asynchat.async_chat):
             return
         elif limit:
             self.num_bytes += len(data)
-        self.received_lines.append(str(data, "utf-8"))
+        self.received_lines.append(data)    # fix 1 - recv raw data, no utf-8 decode   
 
     # Implementation of base class abstract method
     def found_terminator(self):
-        line = EMPTYSTRING.join(self.received_lines)
+        line = EMPTYBINARY.join(self.received_lines).decode('utf8', 'ignore')   # fix 2 - decode joined utf-8 data
         print('Data:', repr(line), file=DEBUGSTREAM)
         self.received_lines = []
         if self.smtp_state == self.COMMAND:
